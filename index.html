@@ -1,0 +1,808 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>For You</title>
+  <style>
+    :root{
+      --bg1:#fff1f6;
+      --bg2:#ffe4ee;
+      --card:#ffffffcc;
+      --ink:#2b2b2b;
+      --pink:#ff4d8d;
+      --pink2:#ff7aa8;
+      --shadow: 0 18px 60px rgba(0,0,0,.12);
+      --shadow2: 0 10px 25px rgba(255,77,141,.22);
+      --radius: 24px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:var(--ink);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background: radial-gradient(1200px 800px at 25% 20%, var(--bg2), transparent 60%),
+                  radial-gradient(1000px 700px at 80% 70%, #ffd3e4, transparent 55%),
+                  linear-gradient(135deg, var(--bg1), #fff);
+      overflow:hidden;
+    }
+
+    .wrap{
+      width:min(920px, 92vw);
+      padding:22px;
+      position:relative;
+    }
+
+    .hearts{
+      position:absolute;
+      inset:-20px;
+      pointer-events:none;
+      opacity:.22;
+      filter: blur(.1px);
+    }
+    .heart{
+      position:absolute;
+      font-size:22px;
+      animation: floatUp linear infinite;
+      transform: translateY(0);
+    }
+    @keyframes floatUp{
+      from{ transform: translateY(40vh) translateX(0) rotate(0deg); opacity:0 }
+      10%{opacity:1}
+      to{ transform: translateY(-55vh) translateX(60px) rotate(20deg); opacity:0 }
+    }
+
+    .stage{
+      display:grid;
+      place-items:center;
+      gap:18px;
+      min-height:540px;
+    }
+
+    .hidden{ display:none !important; }
+
+    .envelope{
+      width:min(420px, 86vw);
+      height:260px;
+      position:relative;
+      cursor:pointer;
+      transform: translateZ(0);
+      filter: drop-shadow(0 18px 30px rgba(0,0,0,.12));
+      transition: transform .2s ease;
+      user-select:none;
+    }
+    .envelope:active{ transform: scale(.985); }
+
+    .env-back{
+      position:absolute;
+      inset:0;
+      background: linear-gradient(135deg, #fff, #ffe7f0);
+      border-radius: 18px;
+      border: 2px solid rgba(255,77,141,.35);
+      box-shadow: var(--shadow2);
+      overflow:hidden;
+    }
+    .env-pocket{
+      position:absolute;
+      inset:0;
+      background:
+        linear-gradient(135deg, rgba(255,77,141,.14), rgba(255,122,168,.08));
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 62%, 0 100%);
+      border-radius: 18px;
+    }
+    .env-flap{
+      position:absolute;
+      left:0; right:0; top:0;
+      height:70%;
+      background: linear-gradient(135deg, #ffd0e0, #fff);
+      clip-path: polygon(0 0, 100% 0, 50% 78%);
+      transform-origin: 50% 0%;
+      transform: rotateX(0deg);
+      transition: transform .75s cubic-bezier(.2,.9,.2,1);
+      border-top-left-radius: 18px;
+      border-top-right-radius: 18px;
+      border: 2px solid rgba(255,77,141,.35);
+      border-bottom:none;
+    }
+    .seal{
+      position:absolute;
+      left:50%;
+      top:58%;
+      transform: translate(-50%,-50%);
+      width:64px; height:64px;
+      border-radius:999px;
+      background: radial-gradient(circle at 35% 30%, #fff, #ffd0e0 55%, #ff7aa8 100%);
+      border: 2px solid rgba(255,77,141,.5);
+      box-shadow: 0 12px 22px rgba(255,77,141,.25);
+      display:grid;
+      place-items:center;
+      font-size:26px;
+    }
+
+    .hint{
+      text-align:center;
+      font-size:14px;
+      opacity:.75;
+    }
+
+    .open .env-flap{ transform: rotateX(165deg); }
+
+    .card{
+      width:min(720px, 92vw);
+      background: var(--card);
+      border: 2px solid rgba(255,77,141,.22);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 26px 22px 22px;
+      backdrop-filter: blur(8px);
+      position:relative;
+      overflow:hidden;
+    }
+    .card:before{
+      content:"";
+      position:absolute;
+      inset:-120px -80px auto auto;
+      width:260px;
+      height:260px;
+      background: radial-gradient(circle at 30% 30%, rgba(255,77,141,.32), transparent 60%);
+      transform: rotate(18deg);
+      pointer-events:none;
+    }
+
+    .frame{
+      border-radius: calc(var(--radius) - 10px);
+      border: 2px dashed rgba(255,77,141,.45);
+      padding: 18px;
+      display:grid;
+      gap:16px;
+      align-items:center;
+      justify-items:center;
+    }
+
+    .gifBox{
+      width:min(420px, 80vw);
+      aspect-ratio: 1.7 / 1;
+      border-radius: 18px;
+      overflow:hidden;
+      border: 2px solid rgba(255,77,141,.25);
+      box-shadow: 0 14px 30px rgba(0,0,0,.10);
+      background: linear-gradient(135deg, rgba(255,255,255,.7), rgba(255,228,238,.55));
+      display:grid;
+      place-items:center;
+      position:relative;
+    }
+    .gifBox img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+    .gifLabel{
+      position:absolute;
+      bottom:10px;
+      left:10px;
+      right:10px;
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+      padding:10px 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.72);
+      border: 1px solid rgba(255,77,141,.18);
+      backdrop-filter: blur(6px);
+      font-size:13px;
+    }
+    .gifSelect{
+      border:none;
+      background: rgba(255,77,141,.10);
+      padding:8px 10px;
+      border-radius: 12px;
+      font-weight:600;
+      color: var(--ink);
+      outline:none;
+      cursor:pointer;
+    }
+
+    h1{
+      margin:6px 0 0;
+      font-size: clamp(22px, 3.8vw, 34px);
+      letter-spacing:.2px;
+      text-align:center;
+    }
+    .sub{
+      margin:0;
+      opacity:.75;
+      font-size:14px;
+      text-align:center;
+    }
+
+    .buttons{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      justify-content:center;
+      margin-top:8px;
+      position:relative;
+      min-height:52px;
+    }
+    button{
+      border:none;
+      padding: 12px 18px;
+      border-radius: 999px;
+      font-weight:800;
+      cursor:pointer;
+      font-size: 15px;
+      transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+      will-change: transform;
+    }
+    .yes{
+      background: linear-gradient(135deg, var(--pink), var(--pink2));
+      color:white;
+      box-shadow: 0 14px 26px rgba(255,77,141,.28);
+    }
+    .yes:hover{ transform: translateY(-1px); box-shadow: 0 18px 34px rgba(255,77,141,.33); }
+    .no{
+      background: rgba(43,43,43,.08);
+      color: var(--ink);
+      box-shadow: 0 10px 18px rgba(0,0,0,.08);
+      position:relative;
+    }
+    .no:hover{ transform: translateY(-1px); }
+
+    .pop{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      overflow:hidden;
+    }
+    .piece{
+      position:absolute;
+      width:10px; height:10px;
+      border-radius:3px;
+      opacity:0;
+      transform: translateY(0) rotate(0deg);
+      animation: pop 900ms ease-out forwards;
+    }
+    @keyframes pop{
+      0%{ opacity:0; transform: translateY(0) rotate(0deg) scale(.6); }
+      12%{ opacity:1; }
+      100%{ opacity:0; transform: translateY(180px) rotate(240deg) scale(1); }
+    }
+
+    .success{
+      text-align:center;
+      padding: 22px 10px 4px;
+    }
+    .big{
+      font-size: clamp(28px, 5vw, 44px);
+      margin:0 0 8px;
+    }
+    .msg{
+      margin:0 auto 14px;
+      max-width: 52ch;
+      opacity:.8;
+      line-height:1.5;
+    }
+    .cta{
+      display:flex;
+      justify-content:center;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+    .secondary{
+      background: rgba(255,77,141,.10);
+      color: var(--ink);
+      box-shadow: 0 10px 18px rgba(255,77,141,.10);
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      .heart, .piece, .env-flap{ animation:none !important; transition:none !important; }
+      button{ transition:none !important; }
+    }
+
+    /* Bigger love on the success screen */
+.loveBig{
+  font-size: clamp(64px, 10vw, 110px);
+  line-height: 1;
+  margin: 6px 0 12px;
+  filter: drop-shadow(0 14px 26px rgba(255,77,141,.22));
+  animation: floatLove 2.6s ease-in-out infinite;
+}
+
+@keyframes floatLove{
+  0%,100%{ transform: translateY(0) scale(1); }
+  50%{ transform: translateY(-10px) scale(1.04); }
+}
+
+/* Flamboyant celebration confetti */
+.piece{
+  border-radius: 999px;
+  animation: popFlamboyant 1200ms cubic-bezier(.15,.9,.2,1) forwards;
+}
+
+@keyframes popFlamboyant{
+  0%{ opacity:0; transform: translate(0, 0) rotate(0deg) scale(.6); }
+  12%{ opacity:1; }
+  100%{ opacity:0; transform: translate(var(--drift), 320px) rotate(920deg) scale(1.1); }
+}
+
+/* faster pulse when tapped */
+.loveBig{
+  cursor: pointer;
+  transform-origin: 50% 60%;
+}
+
+@keyframes pulseFast{
+  0%{ transform: scale(1); }
+  35%{ transform: scale(1.18); }
+  70%{ transform: scale(.98); }
+  100%{ transform: scale(1.08); }
+}
+
+.pulseFast{
+  animation: pulseFast 320ms ease-in-out 1;
+}
+
+/* screen shake when celebrating */
+@keyframes screenShake{
+  0%{ transform: translate(0,0) rotate(0deg); }
+  15%{ transform: translate(-8px, 4px) rotate(-0.6deg); }
+  30%{ transform: translate(7px, -6px) rotate(0.6deg); }
+  45%{ transform: translate(-6px, -2px) rotate(-0.4deg); }
+  60%{ transform: translate(6px, 5px) rotate(0.4deg); }
+  75%{ transform: translate(-4px, 2px) rotate(-0.2deg); }
+  100%{ transform: translate(0,0) rotate(0deg); }
+}
+
+.shakeScreen{
+  animation: screenShake 420ms ease-in-out 1;
+}
+
+    /* ----- Sad dog add-on styles ----- */
+    .pleadWrap{
+      display:grid;
+      place-items:center;
+      gap:14px;
+      margin: 6px 0 8px;
+    }
+    .dogCard{
+      width:min(520px, 92%);
+      display:grid;
+      grid-template-columns: 120px 1fr;
+      gap:14px;
+      align-items:center;
+      padding:14px 14px;
+      border-radius:18px;
+      background: rgba(255,255,255,.72);
+      border: 1px solid rgba(255,77,141,.18);
+      box-shadow: 0 14px 30px rgba(0,0,0,.08);
+      position:relative;
+      overflow:hidden;
+      text-align:left;
+    }
+    .dogGif{
+      width:120px;
+      height:120px;
+      border-radius:16px;
+      overflow:hidden;
+      border: 2px solid rgba(255,77,141,.20);
+      background: rgba(255,228,238,.55);
+      box-shadow: 0 10px 22px rgba(0,0,0,.10);
+    }
+    .dogGif img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+    .dogLine1{
+      font-weight:900;
+      margin:0 0 6px;
+      font-size: 15px;
+    }
+    .dogLine2{
+      margin:0;
+      opacity:.82;
+      line-height:1.45;
+      font-size: 13.5px;
+    }
+    .tinyTag{
+      display:inline-block;
+      margin-top:8px;
+      font-size:12px;
+      font-weight:800;
+      padding:6px 10px;
+      border-radius:999px;
+      background: rgba(255,77,141,.10);
+      border: 1px solid rgba(255,77,141,.18);
+    }
+    .shake{
+      animation: shake 550ms ease-in-out;
+    }
+    @keyframes shake{
+      0%,100%{ transform: translateX(0); }
+      20%{ transform: translateX(-6px); }
+      40%{ transform: translateX(6px); }
+      60%{ transform: translateX(-4px); }
+      80%{ transform: translateX(4px); }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hearts" aria-hidden="true" id="hearts"></div>
+
+    <!-- Stage 1: Envelope -->
+    <section class="stage" id="stageEnvelope">
+      <div class="envelope" id="envelope" role="button" aria-label="Open envelope" tabindex="0">
+        <div class="env-back"></div>
+        <div class="env-pocket"></div>
+        <div class="env-flap"></div>
+        <div class="seal">❤</div>
+      </div>
+      <div class="hint">Click the envelope</div>
+    </section>
+
+    <!-- Stage 2: Question card -->
+    <section class="stage hidden" id="stageCard">
+      <div class="card">
+        <div class="frame">
+          <div class="gifBox">
+            <img id="gifImg" alt="Cute gif" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM2w5bGtqZTVlNjNwdjJkcjNqY2tqcnF0Z3M5bGx2cDVkYzI5d3R5YSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3oriO0OEd9QIDdllqo/giphy.gif">
+            <div class="gifLabel">
+              <span>Pick a vibe</span>
+              <select class="gifSelect" id="gifSelect" aria-label="Choose a gif">
+                <option value="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM2w5bGtqZTVlNjNwdjJkcjNqY2tqcnF0Z3M5bGx2cDVkYzI5d3R5YSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3oriO0OEd9QIDdllqo/giphy.gif">Happy dance</option>
+                <option value="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbGk5NnQ0N2p2b2Y3Z2Jwb2J4cTRycXpnM2d5aGNucXN0NGF0cTFvYSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/MDJ9IbxxvDUQM/giphy.gif">Cute wave</option>
+                <option value="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM2ZlM2s1Z3l2aHR4eGQxMmQ5eXRhZjZ5aG1odmQ4dTV0cnR4OGNjYSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/Ju7l5y9osyymQ/giphy.gif">Heart eyes</option>
+                <option value="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdDhuN3BxNnU4Z3pyc3RkZDV0N3RybjE1aHJ5d2M4Mm4yeWZ0ZTRrYSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o7aCTfyhYawdOXcFW/giphy.gif">Blushing</option>
+              </select>
+            </div>
+          </div>
+
+          <h1>Will you be my girlfriend?</h1>
+          <p class="sub">No pressure. Just me being honest about how I feel.</p>
+
+          <div class="buttons" id="btnArea">
+            <button class="yes" id="yesBtn" type="button">Yes</button>
+            <button class="no" id="noBtn" type="button">No</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stage 2.2: Are you sure? (merged from no.html) -->
+    <section class="stage hidden" id="stageConfirm">
+      <div class="card">
+        <div class="success">
+          <p class="big">Waittt 😭</p>
+          <p class="msg">Are you sure?</p>
+          <div class="buttons">
+            <button class="yes" id="confirmBackBtn" type="button">Okay, go back</button>
+            <button class="secondary" id="confirmNoAgainBtn" type="button">No again</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stage 2.5: Sad dog proposal screen -->
+    <section class="stage hidden" id="stageNo">
+      <div class="card">
+        <div class="success">
+          <p class="big">😭😭😭😭😭😭😭😭</p>
+
+          <div class="pleadWrap">
+            <div class="dogCard" id="dogCard">
+              <div class="dogGif">
+                <img id="sadDogGif" alt="Sad dog"
+                     src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExaG9tZmd0eHk2enJpN2x3a2l0dW8zazY4bXdyZDRsN3p1ZHR3bTFqZSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o6Zt481isNVuQI1l6/giphy.gif">
+              </div>
+              <div class="dogText">
+                <p class="dogLine1" id="dogLine1">This dog was told you might click “No”…</p>
+                <p class="dogLine2" id="dogLine2">He has prepared a tiny dramatic scene. Please do not break his heart.</p>
+                <span class="tinyTag" id="dogTag">mood: heartbreak deluxe</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- <p class="msg">
+            Okay okay… I hear you.<br>
+            But I still like you a lot.<br>
+            Can I ask you properly one more time?
+          </p> -->
+
+          <div class="buttons" id="btnAreaNo">
+            <button class="yes" id="askAgainBtn" type="button">Ask me again</button>
+            <button class="secondary" id="stillNoBtn" type="button">Still no</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stage 3: Success -->
+    <section class="stage hidden" id="stageYes">
+      <div class="card">
+        <div class="success">
+          <div class="loveBig" id="loveBig">❤️</div>
+          <p class="msg"></p>
+          <div class="cta">
+            <button class="yes" id="confettiBtn" type="button">Celebrate</button>
+            <button class="secondary" id="restartBtn" type="button">Replay</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="pop" id="pop"></div>
+
+  <script>
+    const stageEnvelope = document.getElementById("stageEnvelope");
+    const stageCard = document.getElementById("stageCard");
+    const stageConfirm = document.getElementById("stageConfirm");
+    const stageNo = document.getElementById("stageNo");
+    const stageYes = document.getElementById("stageYes");
+
+    const envelope = document.getElementById("envelope");
+    const yesBtn = document.getElementById("yesBtn");
+    const noBtn = document.getElementById("noBtn");
+    const btnArea = document.getElementById("btnArea");
+
+    const confirmBackBtn = document.getElementById("confirmBackBtn");
+    const confirmNoAgainBtn = document.getElementById("confirmNoAgainBtn");
+
+    const btnAreaNo = document.getElementById("btnAreaNo");
+    const askAgainBtn = document.getElementById("askAgainBtn");
+    const stillNoBtn = document.getElementById("stillNoBtn");
+
+    const pop = document.getElementById("pop");
+    const confettiBtn = document.getElementById("confettiBtn");
+    const restartBtn = document.getElementById("restartBtn");
+
+    const gifSelect = document.getElementById("gifSelect");
+    const gifImg = document.getElementById("gifImg");
+
+    // dog elements
+    const dogCard = document.getElementById("dogCard");
+    const sadDogGif = document.getElementById("sadDogGif");
+    const dogLine1 = document.getElementById("dogLine1");
+    const dogLine2 = document.getElementById("dogLine2");
+    const dogTag = document.getElementById("dogTag");
+
+    const dogBits = [
+      {
+        gif: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExaG9tZmd0eHk2enJpN2x3a2l0dW8zazY4bXdyZDRsN3p1ZHR3bTFqZSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o6Zt481isNVuQI1l6/giphy.gif",
+        l1: "This dog was told you might click “No”…",
+        l2: "He has prepared a tiny dramatic scene. Please do not break his heart.",
+        tag: "mood: heartbreak deluxe"
+      },
+      {
+        gif: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdWJtbWw0b3V3ZGF2aHd0bGd2Y2c5cWp6bW8zZGdwejN0aW9vOG5kYSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/1BXa2alBjrCXC/giphy.gif",
+        l1: "Breaking news:",
+        l2: "A small dog has started a protest until you choose “Yes”.",
+        tag: "status: protesting politely"
+      },
+      {
+        gif: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExb3F3eHh5b2tqMml3aWFnd3FlM3h6Y3h1Z3d4dHk2amIyd2o0c2Q0YSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/9Y5BbDSkSTiY8/giphy.gif",
+        l1: "He said:",
+        l2: "“I will be sad. Like… very sad. Like puppy-eyes sad.”",
+        tag: "level: puppy eyes"
+      }
+    ];
+    let dogIdx = 0;
+
+    gifSelect.addEventListener("change", () => {
+      gifImg.src = gifSelect.value;
+    });
+
+    function show(el){ el.classList.remove("hidden"); }
+    function hide(el){ el.classList.add("hidden"); }
+
+    function openEnvelope(){
+      envelope.classList.add("open");
+      setTimeout(() => {
+        hide(stageEnvelope);
+        show(stageCard);
+      }, 650);
+    }
+
+    envelope.addEventListener("click", openEnvelope);
+    envelope.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") openEnvelope();
+    });
+
+    function rand(min, max){ return Math.random() * (max - min) + min; }
+
+    function resetButton(btn){
+      btn.style.position = "relative";
+      btn.style.left = "";
+      btn.style.top = "";
+    }
+
+    // ADD inside your <script> (near other const declarations)
+const loveBig = document.getElementById("loveBig");
+
+// ADD this anywhere after loveBig exists
+function pulseHeart(){
+  if(!loveBig) return;
+  loveBig.classList.remove("pulseFast");
+  void loveBig.offsetWidth; // restart animation
+  loveBig.classList.add("pulseFast");
+}
+
+// Tap/click heart to pulse faster
+if(loveBig){
+  loveBig.addEventListener("click", pulseHeart);
+  loveBig.addEventListener("touchstart", pulseHeart, {passive:true});
+}
+
+// ADD this helper for screen shake
+function shakeScreen(){
+  document.body.classList.remove("shakeScreen");
+  void document.body.offsetWidth;
+  document.body.classList.add("shakeScreen");
+  setTimeout(() => document.body.classList.remove("shakeScreen"), 520);
+}
+
+// EDIT your confetti button listener to also shake
+confettiBtn.addEventListener("click", () => {
+  shakeScreen();
+  burst();
+});
+
+// OPTIONAL: also shake when she first presses Yes (keep if you want)
+yesBtn.addEventListener("click", () => {
+  hide(stageCard);
+  show(stageYes);
+  shakeScreen();
+  burst();
+});
+
+
+function burst(){
+  const count = 90;              // more pieces
+  const w = window.innerWidth;
+
+  for(let i=0;i<count;i++){
+    const d = document.createElement("div");
+    d.className = "piece";
+
+    // spawn across the screen width, slightly above
+    d.style.left = rand(0, w) + "px";
+    d.style.top = rand(-60, 60) + "px";
+
+    // mix shapes: dots + squares
+    const isDot = Math.random() < 0.65;
+    d.style.borderRadius = isDot ? "999px" : "4px";
+
+    // size variety
+    const sz = rand(7, 16);
+    d.style.width = sz + "px";
+    d.style.height = sz + "px";
+
+    // vibrant colors
+    const hue = rand(320, 20) + 360; // wrap-ish
+    d.style.background = `hsl(${Math.floor(hue % 360)}, 95%, ${Math.floor(rand(55, 75))}%)`;
+
+    // add glow sometimes
+    if(Math.random() < 0.25){
+      d.style.boxShadow = "0 0 18px rgba(255,77,141,.55)";
+    }
+
+    // random sideways drift using translate via CSS variable
+    const drift = rand(-180, 180);
+    d.style.setProperty("--drift", drift + "px");
+
+    // stagger timings
+    d.style.animationDelay = rand(0, 160) + "ms";
+    d.style.animationDuration = rand(900, 1500) + "ms";
+
+    // override animation to use drift
+    d.style.animationName = "popFlamboyant";
+
+    pop.appendChild(d);
+    d.addEventListener("animationend", () => d.remove());
+  }
+}
+    // First No -> confirm screen (no redirect)
+    noBtn.addEventListener("click", () => {
+      hide(stageCard);
+      show(stageConfirm);
+    });
+
+    // Confirm screen buttons
+    confirmBackBtn.addEventListener("click", () => {
+      hide(stageConfirm);
+      show(stageCard);
+    });
+
+    confirmNoAgainBtn.addEventListener("click", () => {
+      hide(stageConfirm);
+      show(stageNo);
+      resetButton(stillNoBtn);
+    });
+
+    // Ask me again -> back to main Yes/No
+    askAgainBtn.addEventListener("click", () => {
+      hide(stageNo);
+      show(stageCard);
+      resetButton(stillNoBtn);
+      resetButton(noBtn);
+    });
+
+    // Still no -> moves horizontally only + dog updates (never overlaps Ask me again)
+    function cycleDog(){
+      dogIdx = (dogIdx + 1) % dogBits.length;
+      const b = dogBits[dogIdx];
+      sadDogGif.src = b.gif;
+      dogLine1.textContent = b.l1;
+      dogLine2.textContent = b.l2;
+      dogTag.textContent = b.tag;
+
+      dogCard.classList.remove("shake");
+      void dogCard.offsetWidth;
+      dogCard.classList.add("shake");
+    }
+
+    function moveStillNoSafely(){
+      const areaRect = btnAreaNo.getBoundingClientRect();
+      const btnRect = stillNoBtn.getBoundingClientRect();
+      const maxX = Math.max(0, areaRect.width - btnRect.width);
+      const x = rand(0, maxX);
+
+      stillNoBtn.style.position = "absolute";
+      stillNoBtn.style.left = x + "px";
+      stillNoBtn.style.top = "0px";
+    }
+
+    stillNoBtn.addEventListener("mouseenter", () => {
+      cycleDog();
+      moveStillNoSafely();
+    });
+    stillNoBtn.addEventListener("click", () => {
+      cycleDog();
+      moveStillNoSafely();
+    });
+
+    // Yes flow
+    yesBtn.addEventListener("click", () => {
+      hide(stageCard);
+      show(stageYes);
+      burst();
+    });
+
+    confettiBtn.addEventListener("click", burst);
+
+    restartBtn.addEventListener("click", () => {
+      envelope.classList.remove("open");
+      resetButton(noBtn);
+      resetButton(stillNoBtn);
+      hide(stageYes);
+      hide(stageNo);
+      hide(stageConfirm);
+      show(stageEnvelope);
+    });
+
+    // floating hearts background
+    const hearts = document.getElementById("hearts");
+    const heartChars = ["❤","💗","💖","💘","💕"];
+    for(let i=0;i<18;i++){
+      const s = document.createElement("div");
+      s.className = "heart";
+      s.textContent = heartChars[Math.floor(Math.random() * heartChars.length)];
+      s.style.left = rand(0, 100) + "%";
+      s.style.top = rand(10, 110) + "%";
+      s.style.animationDuration = rand(7, 14) + "s";
+      s.style.animationDelay = rand(0, 6) + "s";
+      s.style.fontSize = rand(16, 28) + "px";
+      hearts.appendChild(s);
+    }
+  </script>
+</body>
+</html>
